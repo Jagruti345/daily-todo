@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CreateTodoInput, Priority, Todo } from "@/types/todo";
 import { priorityOptions, sampleCategories } from "@/lib/data";
+import { CreateTodoInput, Priority, Todo } from "@/types/todo";
+import { useEffect, useState } from "react";
 
 const getTodayString = () => new Date().toISOString().slice(0, 10);
 
@@ -18,7 +18,7 @@ const getInitialFormState = (todo?: Todo): CreateTodoInput => ({
   date: todo?.date ?? getTodayString(),
   time: todo?.time ?? "09:00",
   priority: todo?.priority ?? "MEDIUM",
-  category: todo?.category ?? "Study",
+  category: todo?.category ?? "Work",
 });
 
 export default function TodoForm({
@@ -48,10 +48,14 @@ export default function TodoForm({
     setError("");
   };
 
+  const handlePrioritySelect = (priority: Priority) => {
+    setFormData((current) => ({ ...current, priority }));
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!formData.title.trim()) {
-      setError("Title is required");
+      setError("Please enter a task title");
       return;
     }
 
@@ -59,61 +63,79 @@ export default function TodoForm({
       await onSubmit({ ...formData, title: formData.title.trim() });
       if (!initialTodo) setFormData(getInitialFormState());
     } catch (submitError) {
-      setError("Failed to save todo");
+      setError("Failed to save task");
       console.error(submitError);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-    >
-      <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-600">
+          {error}
+        </div>
+      )}
+
+      {/* Title input */}
+      <div>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          Task Title
+        </label>
         <input
           type="text"
           name="title"
           value={formData.title}
           onChange={handleChange}
-          placeholder="Task title"
+          placeholder="What needs to be done?"
           disabled={isLoading}
-          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          autoFocus
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
         />
-        <input
-          type="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-          disabled={isLoading}
-          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        />
-        <input
-          type="time"
-          name="time"
-          value={formData.time}
-          onChange={handleChange}
-          disabled={isLoading}
-          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        />
-        <select
-          name="priority"
-          value={formData.priority}
-          onChange={handleChange}
-          disabled={isLoading}
-          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        >
-          {priorityOptions.map((priority) => (
-            <option key={priority} value={priority}>
-              {priority}
-            </option>
-          ))}
-        </select>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Date */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Date
+          </label>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            disabled={isLoading}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+          />
+        </div>
+
+        {/* Time */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Scheduled Time
+          </label>
+          <input
+            type="time"
+            name="time"
+            value={formData.time}
+            onChange={handleChange}
+            disabled={isLoading}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
+          />
+        </div>
+      </div>
+
+      {/* Category Dropdown */}
+      <div>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          Category
+        </label>
         <select
           name="category"
           value={formData.category}
           onChange={handleChange}
           disabled={isLoading}
-          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
         >
           {sampleCategories.map((category) => (
             <option key={category} value={category}>
@@ -123,21 +145,61 @@ export default function TodoForm({
         </select>
       </div>
 
-      {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
-      <div className="flex gap-2">
+      {/* Priority Pills */}
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          Priority Level
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {priorityOptions.map((priority) => {
+            const isSelected = formData.priority === priority;
+            const priorityColors = {
+              LOW: isSelected
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100"
+                : "border-slate-200 text-slate-600 hover:bg-emerald-50 hover:border-emerald-300",
+              MEDIUM: isSelected
+                ? "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-100"
+                : "border-slate-200 text-slate-600 hover:bg-amber-50 hover:border-amber-300",
+              HIGH: isSelected
+                ? "bg-rose-600 text-white border-rose-600 shadow-md shadow-rose-100"
+                : "border-slate-200 text-slate-600 hover:bg-rose-50 hover:border-rose-300",
+            };
+
+            return (
+              <button
+                key={priority}
+                type="button"
+                onClick={() => handlePrioritySelect(priority)}
+                disabled={isLoading}
+                className={`rounded-xl border py-2.5 text-xs font-extrabold uppercase tracking-wider transition ${priorityColors[priority]}`}
+              >
+                {priority}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Submit / Cancel Actions */}
+      <div className="flex gap-3 pt-2">
         <button
           type="submit"
           disabled={isLoading}
-          className="flex-1 rounded bg-blue-500 px-4 py-2 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50"
+          className="flex-1 rounded-xl bg-slate-950 py-3.5 font-extrabold text-white shadow-lg shadow-slate-300 transition hover:-translate-y-0.5 hover:bg-sky-600 disabled:opacity-50"
         >
-          {isLoading ? "Saving..." : initialTodo ? "Update Task" : "Add Task"}
+          {isLoading
+            ? "Saving..."
+            : initialTodo
+            ? "Update Task"
+            : "+ Save Task"}
         </button>
+
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="rounded bg-gray-200 px-4 py-2 font-medium text-gray-800 hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            className="rounded-xl border border-slate-200 px-5 py-3.5 font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
           >
             Cancel
           </button>
